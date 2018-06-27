@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Stein, Schere, Papier - Das Duell</title>
+</head>
+<body>
+    <script src="index.js"></script>
+    <h1>Stein, Schere, Papier - Das Duell!</h1>
+    <h2>Dein Score: <span id='yourscore'></span></h2>
+    <h2>CPU Score: <span id='myscore'></span></h2>
+    <hr>
+    <h3>Du spielst gegen: <br><small id='enemy'></small></h3>
+    <h2>Deine Wahl für Runde <span id='round'></span>?</h2>
+    <button id='schere'>Schere</button>
+    <button id='stein'>Stein</button>
+    <button id='papier'>Papier</button>
+    <hr>
+    <h2 id='info'></h2>
+
+    <script>
+            let yourScore = document.getElementById('yourscore');
+            let myScore = document.getElementById('myscore');
+            let rndEl = document.getElementById('round');
+            let yS = 0;
+            let mS = 0;
+            let yW = 0;
+            let mW = 0;
+            let rnd = 1;
+            rndEl.innerText = rnd;
+            yourScore.innerText = yS;
+            myScore.innerText = mS;
+            let networkCount = 400;
+            let lastSteps = 7; 
+            let nn = new NetworkX(networkCount, lastSteps);
+            let nextChoice = checkEnemy();       
+            
+            let schere = document.getElementById('schere');
+            let stein = document.getElementById('stein');
+            let papier = document.getElementById('papier');
+
+            schere.addEventListener('click', () => choose(2));
+            stein.addEventListener('click', () => choose(1));
+            papier.addEventListener('click', () => choose(3));
+
+            function choose(i) {
+                let nf = document.getElementById('info');
+                nf.innerHTML = '';
+                nf.innerHTML += 'Du hast ' + wording(i) + ' gewählt!<br>';
+                nf.innerHTML += 'Dein Gegner wählt ' + wording(nextChoice) + '!<br><hr>';
+                let msg = checkWin(i, nextChoice);
+                nf.innerHTML += 'Du ' + msg + '<br>';
+                yourScore.innerText = yS + ' || Win% ('+ Math.floor(yW/rnd * 100) +')';
+                myScore.innerText = mS + ' || Win% ('+ Math.floor(mW/rnd * 100) +')';;
+                nn.inputUserChoice(i);
+                nextChoice = checkEnemy();
+                rnd++;
+                rndEl.innerText = rnd;
+            }
+
+            function checkWin(h, c) {
+                let msg = 'verlierst!'
+                mS += 1;
+                mW++;
+                if(c == h) {
+                    msg = 'erreichst ein Unentschieden!'
+                    yS += 0.5;
+                    mS -= 0.5;
+                    mW--;
+                }
+                if(c == 1 && h == 3) {
+                    msg = 'gewinnst!';
+                    yS += 1;
+                    mS -= 1;
+                    yW++;
+                    mW--;
+                }
+                if(c == 3 && h == 2) {
+                    msg = 'gewinnst!';
+                    yS += 1;
+                    mS -= 1;
+                    yW++;
+                    mW--;
+                }
+                if(c == 2 && h == 1) {
+                    msg = 'gewinnst!';
+                    yS += 1;
+                    mS -= 1;
+                    yW++;
+                    mW--;
+                }
+                return msg;           
+            }
+           
+            function wording(i) {
+                if(i == 1) {
+                    return 'Stein'
+                }
+                if(i == 2) {
+                    return 'Schere'
+                }
+                if(i == 3) {
+                    return 'Papier'
+                }
+            }
+
+            function checkEnemy() {
+                let masterNet = nn.strongestNet();
+                let muta = (masterNet[3] == 1) ? 'mutated' : 'natural';
+                let info = ('Neural Network #'+masterNet[4]+' (Gen: '+masterNet[2]+', Fitness: '+masterNet[1]+', Performance: '+masterNet[5]+', '+ muta +')');
+                document.getElementById('enemy').innerText = info;
+                return masterNet[0];
+            }
+    </script>
+</body>
+</html>
